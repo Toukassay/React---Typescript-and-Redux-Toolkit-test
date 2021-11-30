@@ -1,48 +1,41 @@
 import React, { useState } from "react";
-
-// INTERFACES
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-}
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addTodo,
+  removeTodo,
+  toggleCompleteTodo,
+} from "../redux/slice/todosSlice";
+import { RootState } from "../redux/store";
+import { ITodo } from "../redux/slice/todosSlice";
 
 export const TodoComponent = () => {
+  // REDUX
+  const dispatch = useDispatch();
+  const todos = useSelector((state: RootState) => state.todos);
+
   // STATE
-  const initialTodos: Todo[] = [
-    { id: 0, text: "Todo 1", completed: false },
-    { id: 1, text: "Todo 2", completed: true },
-    { id: 2, text: "Todo 3", completed: false },
-  ];
-
-  const [todos, setTodos] = useState<Todo[]>(initialTodos);
-
-  let [newTask, setNewTask] = useState<Todo>();
+  let [newTask, setNewTask] = useState<ITodo>();
 
   // ACTIONS
-  const handleClickOnComplete = (id: number, completed: boolean) => {
-    const newTodos = [...todos];
-    newTodos[id].completed = !completed;
-    setTodos(newTodos);
-  };
-
-  const handleRemove = (todo: Todo) => {
-    const newTodos = todos.filter((t) => t !== todo);
-    setTodos(newTodos);
-  };
-
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewTask({
-      id: todos.length,
+      id: Date.now(),
       text: event.target.value,
       completed: false,
     });
   };
 
+  // REDUX ACTIONS
+  const handleClickOnComplete = (todo: ITodo) => {
+    dispatch(toggleCompleteTodo(todo));
+  };
+
+  const handleRemove = (todo: ITodo) => {
+    dispatch(removeTodo(todo));
+  };
+
   const handleSubmitNewTodo = () => {
-    const newTodos = [...todos];
-    newTask && newTodos.push(newTask);
-    setTodos(newTodos);
+    newTask && dispatch(addTodo(newTask));
   };
 
   return (
@@ -57,7 +50,7 @@ export const TodoComponent = () => {
               <input
                 type="checkbox"
                 checked={todo.completed}
-                onChange={() => handleClickOnComplete(todo.id, todo.completed)}
+                onChange={() => handleClickOnComplete(todo)}
               />
               <button onClick={() => handleRemove(todo)}>Remove task</button>
             </div>
